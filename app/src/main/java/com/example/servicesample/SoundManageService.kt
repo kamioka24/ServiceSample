@@ -2,10 +2,12 @@ package com.example.servicesample
 
 import android.app.Service
 import android.content.Intent
+import android.content.QuickViewConstants
 import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.net.Uri
 import android.os.IBinder
+import android.view.View
 
 class SoundManageService : Service() {
 
