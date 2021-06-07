@@ -1,5 +1,8 @@
 package com.example.servicesample
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.QuickViewConstants
@@ -8,11 +11,18 @@ import android.media.PlaybackParams
 import android.net.Uri
 import android.os.IBinder
 import android.view.View
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
 class SoundManageService : Service() {
 
     override fun onBind(intent: Intent): IBinder {
         TODO("Return the communication channel to the service.")
+    }
+
+    companion object {
+        // 通知チャンネル ID 文字列定数
+        private const val CHANNEL_ID = "soundmanagerservice_notification_channel"
     }
 
     // メディアプレーヤープロパティ
@@ -21,6 +31,21 @@ class SoundManageService : Service() {
     override fun onCreate() {
         // プロパティのメディアプレーヤーオブジェクトを生成
         _player = MediaPlayer()
+
+        // 通知チャンネル名を string.xml から取得
+        val name = getString(R.string.notification_channel_name)
+
+        // 通知チャンネルの重要度を標準に設定
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+        // 通知チャンネルを生成
+        val channel = NotificationChannel(CHANNEL_ID, name, importance)
+
+        // NotificationManager オブジェクトを取得
+        val manager = getSystemService(NotificationManager::class.java)
+
+        // 通知チャンネルを設定
+        manager.createNotificationChannel(channel)
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -69,8 +94,30 @@ class SoundManageService : Service() {
         }
     }
 
+    // メディア再生が終了したときのリスナクラス
     private inner class PlayerCompletionListener : MediaPlayer.OnCompletionListener {
         override fun onCompletion(mp: MediaPlayer) {
+            // Notification を作成する Builder クラス生成
+            val builder = NotificationCompat.Builder(this@SoundManageService, CHANNEL_ID)
+
+            // 通知エリアに表示されるアイコンを設定
+            builder.setSmallIcon(android.R.drawable.ic_dialog_info)
+
+            // 通知ドロワーでの表示タイトルを設定
+            builder.setContentTitle(getString(R.string.msg_notification_title_finish))
+
+            // 通知ドロワーでの表示メッセージを設定
+            builder.setContentText(getString(R.string.msg_notification_text_finish))
+
+            // Builder から Notification オブジェクトを生成
+            val notification = builder.build()
+
+            // NotificationManagerCompat オブジェクトを取得
+            val manager = NotificationManagerCompat.from(this@SoundManageService)
+
+            // 通知
+            manager.notify(100, notification)
+
             // 自分自身を終了
             stopSelf()
         }
