@@ -1,9 +1,6 @@
 package com.example.servicesample
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
+import android.app.*
 import android.content.Intent
 import android.content.QuickViewConstants
 import android.media.MediaPlayer
@@ -91,6 +88,39 @@ class SoundManageService : Service() {
         override fun onPrepared(mp: MediaPlayer) {
             // メディアを再生
             mp.start()
+
+            // Notification を作成する Builder クラス生成
+            val builder = NotificationCompat.Builder(this@SoundManageService, CHANNEL_ID)
+
+            // 通知エリアに表示されるアイコンを設定
+            builder.setSmallIcon(android.R.drawable.ic_dialog_info)
+
+            // 通知ドロワーでの表示タイトルを設定
+            builder.setContentTitle(getString(R.string.msg_notification_title_start))
+
+            // 通知ドロワーでの表示メッセージを設定
+            builder.setContentText(getString(R.string.msg_notification_text_start))
+
+            // 起動先 Activity クラスを指定した Intent オブジェクトを生成
+            val intent = Intent(this@SoundManageService, MainActivity::class.java)
+
+            // 起動先アクティビティに引き継ぎデータを格納
+            intent.putExtra("fromNotification", true)
+
+            // PendingIntent オブジェクトを取得
+            val stopServiceIntent = PendingIntent.getActivity(this@SoundManageService, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+            // PendingIntent オブジェクトをビルダーに設定
+            builder.setContentIntent(stopServiceIntent)
+
+            // タップされた通知メッセージを自動的に消去するように設定
+            builder.setAutoCancel(true)
+
+            // Builder から Notification オブジェクトを生成
+            val notification = builder.build()
+
+            // Notification オブジェクトをもとにサービスをフォアグラウンド化
+            startForeground(200, notification)
         }
     }
 
